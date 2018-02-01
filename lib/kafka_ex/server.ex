@@ -298,7 +298,7 @@ defmodule KafkaEx.Server do
 
         response = case broker do
           nil    ->
-            Logger.log(:error, "Leader for topic #{produce_request.topic} is not available")
+            Logger.log(:error, "Leader for topic #{produce_request.topic} is not available (server)")
             :leader_not_available
           broker -> case produce_request.required_acks do
             0 ->  NetworkClient.send_async_request(broker, produce_request_data)
@@ -478,7 +478,7 @@ defmodule KafkaEx.Server do
         case broker do
           nil ->
             Logger.error(fn ->
-              "Leader for topic #{request.topic} is not available"
+              "Leader for topic #{request.topic} is not available (Server network_request)"
             end)
             {{:error, :topic_not_found}, updated_state}
           _ ->

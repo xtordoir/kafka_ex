@@ -13,7 +13,8 @@ defmodule KafkaEx.Protocol do
   @leave_group_request       13
   @sync_group_request        14
 
-  @api_version  0
+  def api_version(:produce), do: 2
+  def api_version(_), do: 0
 
   defp api_key(:produce) do
     @produce_request
@@ -60,7 +61,7 @@ defmodule KafkaEx.Protocol do
   end
 
   def create_request(type, correlation_id, client_id) do
-    << api_key(type) :: 16, @api_version :: 16, correlation_id :: 32,
+    << api_key(type) :: 16, api_version(type) :: 16, correlation_id :: 32,
        byte_size(client_id) :: 16, client_id :: binary >>
   end
 

@@ -80,9 +80,15 @@ defmodule KafkaEx.Protocol.Produce do
   defp message_set_header(message) do
     << 0 :: 64-signed, byte_size(message) :: 32-signed >>
   end
+  
+  def current_timestamp do
+    {mega, sec, ms} = :erlang.timestamp()
+    (mega*1000000+sec)*1000 + :erlang.round(ms/1000)
+  end
 
   defp create_message(value, key, attributes \\ 0) do
-    sub = << 0 :: 8, attributes :: 8-signed >> <> bytes(key) <> bytes(value)
+    timestamp = current_timestamp()
+    sub = << Protocol.api_version(:produce)-1 :: 8, attributes :: 8-signed, timestamp :: 64>> <> bytes(key) <> bytes(value)
     crc = :erlang.crc32(sub)
     << crc :: 32 >> <> sub
   end
@@ -95,8 +101,12 @@ defmodule KafkaEx.Protocol.Produce do
     end
   end
 
-  def parse_partitions(0, rest, partitions), do: {partitions, rest}
-  def parse_partitions(partitions_size, << partition :: 32-signed, error_code :: 16-signed, offset :: 64, rest :: binary >>, partitions) do
+  def parse_partitions(0, rest, partitions) do
+   # << throttle ::64 >> = rest
+     {partitions, rest}
+  end
+
+  def parse_partitions(partitions_size, << partition :: 32-signed, error_code :: 16-signed, offset :: 64, tstamp :: 64, rest :: binary >>, partitions) do
     parse_partitions(partitions_size - 1, rest, [%{partition: partition, error_code: Protocol.error(error_code), offset: offset} | partitions])
   end
 
