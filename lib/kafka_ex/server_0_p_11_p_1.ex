@@ -236,7 +236,7 @@ defmodule KafkaEx.Server0P11P1 do
             #IO.puts(state)
             {retrieved_corr_id, _} = retrieve_metadata(state.brokers, state.correlation_id, config_sync_timeout(), produce_request.topic)
             state = %{update_metadata(state) | correlation_id: retrieved_corr_id}
-            IO.puts(state)
+           
 
             {
               MetadataResponse.broker_for_topic(state.metadata, state.brokers, produce_request.topic, produce_request.partition),
